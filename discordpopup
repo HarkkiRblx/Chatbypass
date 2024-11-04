@@ -1,0 +1,143 @@
+-- Create the ScreenGui
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "DiscordGui"
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Create the Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0.4, 0, 0.4, 0) -- 40% width, 40% height
+mainFrame.Position = UDim2.new(0.3, 0, 0.3, 0) -- Centered
+mainFrame.BackgroundTransparency = 1 -- Make it transparent for the background effect
+mainFrame.Parent = screenGui
+
+-- Create a UI Corner for rounded edges
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0.1, 0) -- Rounded corners
+corner.Parent = mainFrame
+
+-- Create the rainbow background effect
+local backgroundFrame = Instance.new("Frame")
+backgroundFrame.Size = UDim2.new(1, 0, 1, 0)
+backgroundFrame.Position = UDim2.new(0, 0, 0, 0)
+backgroundFrame.BackgroundColor3 = Color3.new(1, 1, 1) -- Default to white
+backgroundFrame.BackgroundTransparency = 0 -- No transparency for the rainbow effect
+backgroundFrame.Parent = mainFrame
+
+-- Create the TextLabel
+local discordLabel = Instance.new("TextLabel")
+discordLabel.Name = "DiscordLabel"
+discordLabel.Size = UDim2.new(1, 0, 0.25, 0) -- Full width, 25% height
+discordLabel.Position = UDim2.new(0, 0, 0, 0) -- Top of the frame
+discordLabel.Text = "Join our Discord!"
+discordLabel.BackgroundTransparency = 1 -- Make background transparent
+discordLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text for contrast
+discordLabel.TextScaled = true -- Scale text to fit
+discordLabel.Font = Enum.Font.GothamBold -- Bold font
+discordLabel.Parent = mainFrame
+
+-- Create the Copy Button
+local copyButton = Instance.new("TextButton")
+copyButton.Name = "CopyButton"
+copyButton.Size = UDim2.new(1, 0, 0.3, 0) -- Full width, 30% height
+copyButton.Position = UDim2.new(0, 0, 0.25, 0) -- Below the label
+copyButton.Text = "Copy Discord Link"
+copyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0) -- Green background
+copyButton.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text
+copyButton.TextScaled = true
+copyButton.Font = Enum.Font.GothamBold -- Bold font
+copyButton.Parent = mainFrame
+
+-- Set ZIndex for the button to be above the rainbow background
+copyButton.ZIndex = 2
+
+-- Create the Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseButton"
+closeButton.Size = UDim2.new(1, 0, 0.2, 0) -- Full width, 20% height
+closeButton.Position = UDim2.new(0, 0, 0.55, 0) -- Below the Copy button
+closeButton.Text = "Close"
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red background
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255) -- White text
+closeButton.TextScaled = true
+closeButton.Font = Enum.Font.GothamBold -- Bold font
+closeButton.Parent = mainFrame
+
+-- Set ZIndex for the close button to be above the rainbow background
+closeButton.ZIndex = 2
+
+-- Define the Discord link
+local discordLink = "https://discord.gg/JhRgZUCkyD"
+
+-- Create sound objects
+local buttonClickSound = Instance.new("Sound") -- Create sound for button clicks
+buttonClickSound.SoundId = "rbxassetid://140910211" -- New Click sound
+buttonClickSound.Volume = 0.1 -- Set volume to 10%
+buttonClickSound.Parent = mainFrame
+
+-- Function to copy the link
+local function copyLink()
+    setclipboard(discordLink) -- Copies the Discord link to the clipboard
+    buttonClickSound:Play() -- Play sound when copying link
+    print("Discord link copied: " .. discordLink) -- Optional: prints to console
+end
+
+-- Function to close the GUI
+local function closeGui()
+    buttonClickSound:Play() -- Play sound when closing
+    mainFrame.Visible = false -- Hides the GUI frame
+end
+
+-- Connect the button click events
+copyButton.MouseButton1Click:Connect(copyLink)
+closeButton.MouseButton1Click:Connect(closeGui)
+
+-- Rainbow effect function
+local function rainbowEffect()
+    while true do
+        for i = 0, 360, 5 do
+            local hue = i / 360
+            backgroundFrame.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+            wait(0.05) -- Adjust the wait time for speed of the effect
+        end
+    end
+end
+
+-- Start the rainbow effect
+rainbowEffect()
+
+-- Make the frame draggable
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        updateInput(input)
+    end
+end)
+
+-- Make the frame initially visible
+mainFrame.Visible = true
+
